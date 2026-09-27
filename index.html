@@ -12,28 +12,46 @@
 
 <body>
 
+    <!-- BARRA SUPERIOR -->
     <header class="top-bar">
+
         <div class="logo">
             STYLE MUSIC
         </div>
+
     </header>
+
 
     <div class="layout">
 
+        <!-- MENÚ LATERAL -->
         <aside class="sidebar">
 
             <nav>
-                <a class="nav-selected">⌂ Inicio</a>
-                <a>↓ Descargas</a>
-                <a>ⓘ Acerca de</a>
+
+                <a href="#inicio" class="nav-selected">
+                    ⌂ Inicio
+                </a>
+
+                <a href="#descargas">
+                    ↓ Descargas
+                </a>
+
+                <a href="#acerca">
+                    ⓘ Acerca de
+                </a>
+
             </nav>
 
         </aside>
 
 
+        <!-- CONTENIDO PRINCIPAL -->
         <main class="content">
 
-            <section class="welcome">
+
+            <!-- INICIO -->
+            <section id="inicio" class="welcome">
 
                 <p class="small-text">
                     STYLE MUSIC
@@ -50,7 +68,8 @@
             </section>
 
 
-            <section class="download-card">
+            <!-- ÚLTIMA VERSIÓN -->
+            <section id="descargas" class="download-card">
 
                 <div class="version-info">
 
@@ -58,53 +77,580 @@
                         ÚLTIMA VERSIÓN
                     </span>
 
-                    <h2>
-                        Style Groove Music
+                    <h2 id="latest-title">
+                        Cargando...
                     </h2>
 
-                    <p>
-                        Versión 1.0.0
+                    <p id="latest-version">
+                        Buscando la última versión...
                     </p>
 
-                    <p class="secondary">
+                    <p class="secondary" id="latest-platform">
                         Windows · 64 bits
+                    </p>
+
+                    <p class="secondary" id="latest-date">
                     </p>
 
                 </div>
 
-                <a class="download-button"
-                    href="https://github.com/Jgame0534/StyleGrooveMusic/releases/download/v1.0.0/myStyleMusic.zip"
-                    download>
+
+                <a
+                    id="latest-download"
+                    class="download-button"
+                    href="#"
+                >
                     ↓ DESCARGAR
                 </a>
 
             </section>
 
 
+            <!-- VERSIONES ANTERIORES -->
             <section class="old-versions">
 
                 <h2>
                     Versiones anteriores
                 </h2>
 
-                <div class="version-row">
+                <div id="versions-list">
 
-                    <div>
-                        <strong>Versión 0.9.0</strong>
-                        <p>Windows · 64 bits</p>
-                    </div>
-
-                    <a href="https://github.com/Jgame0534/StyleGrooveMusic/releases/download/v1.0.0/myStyleMusic.zip">
-                        Descargar
-                    </a>
+                    <p class="secondary">
+                        Cargando versiones anteriores...
+                    </p>
 
                 </div>
 
             </section>
 
+
+            <!-- ACERCA DE -->
+            <section id="acerca" class="old-versions">
+
+                <h2>
+                    Acerca de
+                </h2>
+
+                <div class="version-row">
+
+                    <div>
+
+                        <strong>
+                            Style Groove Music
+                        </strong>
+
+                        <p>
+                            Reproductor de música para Windows.
+                        </p>
+
+                        <p>
+                            Desarrollado para reproducir y organizar
+                            tu música de una manera sencilla.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
         </main>
 
     </div>
+
+
+    <!-- SISTEMA AUTOMÁTICO DE VERSIONES -->
+    <script>
+
+        /*
+            REPOSITORIO DE GITHUB
+
+            No necesitas cambiar esto.
+        */
+
+        const REPOSITORIO =
+            "Jgame0534/StyleGrooveMusic";
+
+
+        /*
+            API DE GITHUB
+
+            Esta dirección obtiene todas las versiones
+            publicadas del programa.
+        */
+
+        const API_RELEASES =
+            `https://api.github.com/repos/${REPOSITORIO}/releases?per_page=100`;
+
+
+        /*
+            Elementos de la página
+        */
+
+        const tituloUltimaVersion =
+            document.getElementById("latest-title");
+
+        const numeroUltimaVersion =
+            document.getElementById("latest-version");
+
+        const fechaUltimaVersion =
+            document.getElementById("latest-date");
+
+        const botonDescarga =
+            document.getElementById("latest-download");
+
+        const listaVersiones =
+            document.getElementById("versions-list");
+
+
+        /*
+            Convierte:
+
+            v1.0.1
+
+            en:
+
+            1.0.1
+        */
+
+        function limpiarVersion(tag) {
+
+            if (!tag) {
+                return "Desconocida";
+            }
+
+            return tag.replace(/^v/i, "");
+
+        }
+
+
+        /*
+            Busca el archivo ZIP de una versión.
+        */
+
+        function buscarZIP(release) {
+
+            if (!release.assets) {
+                return null;
+            }
+
+            return release.assets.find(function (archivo) {
+
+                return archivo.name
+                    .toLowerCase()
+                    .endsWith(".zip");
+
+            });
+
+        }
+
+
+        /*
+            Formatea la fecha.
+        */
+
+        function formatearFecha(fecha) {
+
+            if (!fecha) {
+                return "";
+            }
+
+            const fechaReal =
+                new Date(fecha);
+
+            return new Intl.DateTimeFormat(
+                "es-CO",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            ).format(fechaReal);
+
+        }
+
+
+        /*
+            Evita que texto proveniente de GitHub
+            pueda romper el HTML.
+        */
+
+        function escaparHTML(texto) {
+
+            return String(texto ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        /*
+            Carga todas las versiones.
+        */
+
+        async function cargarVersiones() {
+
+            try {
+
+                listaVersiones.innerHTML =
+                    `
+                    <p class="secondary">
+                        Cargando versiones...
+                    </p>
+                    `;
+
+
+                const respuesta =
+                    await fetch(
+                        API_RELEASES,
+                        {
+                            headers: {
+                                "Accept":
+                                    "application/vnd.github+json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "No se pudieron obtener las versiones."
+                    );
+
+                }
+
+
+                const releases =
+                    await respuesta.json();
+
+
+                /*
+                    Solo usamos Releases publicados.
+
+                    Las versiones marcadas como:
+                    - Draft
+                    - Pre-release
+
+                    no aparecerán aquí.
+                */
+
+                const versiones =
+                    releases.filter(function (release) {
+
+                        return (
+                            !release.draft &&
+                            !release.prerelease
+                        );
+
+                    });
+
+
+                /*
+                    Ordenamos desde la publicación
+                    más reciente hasta la más antigua.
+                */
+
+                versiones.sort(function (a, b) {
+
+                    const fechaA =
+                        new Date(
+                            a.published_at ||
+                            a.created_at
+                        );
+
+                    const fechaB =
+                        new Date(
+                            b.published_at ||
+                            b.created_at
+                        );
+
+                    return fechaB - fechaA;
+
+                });
+
+
+                /*
+                    Si no existe ninguna versión.
+                */
+
+                if (versiones.length === 0) {
+
+                    tituloUltimaVersion.textContent =
+                        "Style Groove Music";
+
+                    numeroUltimaVersion.textContent =
+                        "No hay versiones publicadas.";
+
+                    fechaUltimaVersion.textContent =
+                        "";
+
+                    botonDescarga.style.display =
+                        "none";
+
+                    listaVersiones.innerHTML =
+                        `
+                        <p class="secondary">
+                            Todavía no hay versiones anteriores.
+                        </p>
+                        `;
+
+                    return;
+
+                }
+
+
+                /*
+                    LA PRIMERA ES LA ÚLTIMA VERSIÓN
+                */
+
+                const ultima =
+                    versiones[0];
+
+
+                const numero =
+                    limpiarVersion(
+                        ultima.tag_name
+                    );
+
+
+                const nombre =
+                    ultima.name ||
+                    "Style Groove Music";
+
+
+                const zip =
+                    buscarZIP(ultima);
+
+
+                /*
+                    Mostrar última versión
+                */
+
+                tituloUltimaVersion.textContent =
+                    nombre;
+
+
+                numeroUltimaVersion.textContent =
+                    "Versión " + numero;
+
+
+                fechaUltimaVersion.textContent =
+                    "Publicado el " +
+                    formatearFecha(
+                        ultima.published_at
+                    );
+
+
+                /*
+                    Botón de descarga
+                */
+
+                if (zip) {
+
+                    botonDescarga.href =
+                        zip.browser_download_url;
+
+                    botonDescarga.textContent =
+                        "↓ DESCARGAR";
+
+                    botonDescarga.style.display =
+                        "inline-block";
+
+                    botonDescarga.removeAttribute(
+                        "target"
+                    );
+
+                } else {
+
+                    /*
+                        Si por alguna razón el Release
+                        no tiene ZIP, llevamos al Release
+                        de GitHub.
+                    */
+
+                    botonDescarga.href =
+                        ultima.html_url;
+
+                    botonDescarga.textContent =
+                        "VER RELEASE";
+
+                    botonDescarga.target =
+                        "_blank";
+
+                    botonDescarga.rel =
+                        "noopener noreferrer";
+
+                    botonDescarga.style.display =
+                        "inline-block";
+
+                }
+
+
+                /*
+                    VERSIONES ANTERIORES
+                */
+
+                const anteriores =
+                    versiones.slice(1);
+
+
+                if (anteriores.length === 0) {
+
+                    listaVersiones.innerHTML =
+                        `
+                        <p class="secondary">
+                            Esta es la primera versión publicada.
+                        </p>
+                        `;
+
+                    return;
+
+                }
+
+
+                /*
+                    Creamos las tarjetas
+                    de versiones anteriores.
+                */
+
+                listaVersiones.innerHTML =
+                    anteriores.map(function (release) {
+
+                        const version =
+                            limpiarVersion(
+                                release.tag_name
+                            );
+
+
+                        const zip =
+                            buscarZIP(release);
+
+
+                        const fecha =
+                            formatearFecha(
+                                release.published_at
+                            );
+
+
+                        let enlace =
+                            release.html_url;
+
+
+                        let textoBoton =
+                            "Ver Release";
+
+
+                        if (zip) {
+
+                            enlace =
+                                zip.browser_download_url;
+
+                            textoBoton =
+                                "Descargar";
+
+                        }
+
+
+                        return `
+
+                            <div class="version-row">
+
+                                <div>
+
+                                    <strong>
+                                        Versión
+                                        ${escaparHTML(version)}
+                                    </strong>
+
+                                    <p>
+                                        Windows · 64 bits
+                                    </p>
+
+                                    <p>
+                                        ${escaparHTML(fecha)}
+                                    </p>
+
+                                </div>
+
+
+                                <a
+                                    href="${escaparHTML(enlace)}"
+                                    ${zip ? "" : 'target="_blank" rel="noopener noreferrer"'}
+                                >
+                                    ${textoBoton}
+                                </a>
+
+                            </div>
+
+                        `;
+
+                    }).join("");
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando versiones:",
+                    error
+                );
+
+
+                tituloUltimaVersion.textContent =
+                    "Style Groove Music";
+
+
+                numeroUltimaVersion.textContent =
+                    "No se pudieron cargar las versiones.";
+
+
+                fechaUltimaVersion.textContent =
+                    "";
+
+
+                botonDescarga.style.display =
+                    "none";
+
+
+                listaVersiones.innerHTML =
+                    `
+                    <div class="version-row">
+
+                        <div>
+
+                            <strong>
+                                No se pudieron cargar
+                                las versiones.
+                            </strong>
+
+                            <p>
+                                Comprueba tu conexión
+                                a Internet e inténtalo
+                                de nuevo.
+                            </p>
+
+                        </div>
+
+                    </div>
+                    `;
+
+            }
+
+        }
+
+
+        /*
+            INICIAR SISTEMA
+        */
+
+        cargarVersiones();
+
+    </script>
 
 </body>
 
