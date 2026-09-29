@@ -16,7 +16,7 @@
     <header class="top-bar">
 
         <div class="logo">
-            BIENVENIDO A MY STYLE MUSIC
+            STYLE MUSIC
         </div>
 
     </header>
@@ -46,7 +46,7 @@
         </aside>
 
 
-        <!-- CONTENIDO PRINCIPAL -->
+        <!-- CONTENIDO -->
         <main class="content">
 
 
@@ -91,6 +91,11 @@
 
                     <p class="secondary" id="latest-date">
                     </p>
+
+                    <!-- NOTAS DE LA RELEASE -->
+                    <div id="latest-notes"
+                         class="release-notes">
+                    </div>
 
                 </div>
 
@@ -145,7 +150,7 @@
 
                         <p>
                             Desarrollado para reproducir y organizar
-                            tu música de una manera sencilla,© 2026 My Style Grow Music. Todos los derechos reservados. Ninguna parte de esta aplicación puede ser copiada, reproducida o distribuida sin la autorización expresa del creador.
+                            tu música de una manera sencilla.
                         </p>
 
                     </div>
@@ -160,13 +165,11 @@
     </div>
 
 
-    <!-- SISTEMA AUTOMÁTICO DE VERSIONES -->
+    <!-- SISTEMA AUTOMÁTICO -->
     <script>
 
         /*
             REPOSITORIO DE GITHUB
-
-            No necesitas cambiar esto.
         */
 
         const REPOSITORIO =
@@ -174,10 +177,7 @@
 
 
         /*
-            API DE GITHUB
-
-            Esta dirección obtiene todas las versiones
-            publicadas del programa.
+            API DE RELEASES
         */
 
         const API_RELEASES =
@@ -185,7 +185,7 @@
 
 
         /*
-            Elementos de la página
+            ELEMENTOS DE LA PÁGINA
         */
 
         const tituloUltimaVersion =
@@ -197,6 +197,9 @@
         const fechaUltimaVersion =
             document.getElementById("latest-date");
 
+        const notasUltimaVersion =
+            document.getElementById("latest-notes");
+
         const botonDescarga =
             document.getElementById("latest-download");
 
@@ -205,13 +208,7 @@
 
 
         /*
-            Convierte:
-
-            v1.0.1
-
-            en:
-
-            1.0.1
+            Quitar la "v" de v1.0.1
         */
 
         function limpiarVersion(tag) {
@@ -226,7 +223,7 @@
 
 
         /*
-            Busca el archivo ZIP de una versión.
+            Buscar ZIP
         */
 
         function buscarZIP(release) {
@@ -247,7 +244,7 @@
 
 
         /*
-            Formatea la fecha.
+            Formatear fecha
         */
 
         function formatearFecha(fecha) {
@@ -272,24 +269,128 @@
 
 
         /*
-            Evita que texto proveniente de GitHub
-            pueda romper el HTML.
+            Convertir las notas de GitHub
+            en HTML sencillo.
+
+            También permite:
+
+            - títulos
+            - listas
+            - texto
+            - saltos de línea
         */
 
-        function escaparHTML(texto) {
+        function convertirNotas(texto) {
 
-            return String(texto ?? "")
+            if (!texto) {
+
+                return `
+                    <p class="secondary">
+                        No hay notas de esta versión.
+                    </p>
+                `;
+
+            }
+
+
+            /*
+                Primero protegemos HTML.
+            */
+
+            let contenido =
+                texto
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/>/g, "&gt;");
+
+
+            /*
+                Negrita Markdown:
+
+                **texto**
+            */
+
+            contenido =
+                contenido.replace(
+                    /\*\*(.*?)\*\*/g,
+                    "<strong>$1</strong>"
+                );
+
+
+            /*
+                Títulos Markdown:
+
+                # Bug fixes
+            */
+
+            contenido =
+                contenido.replace(
+                    /^### (.*)$/gm,
+                    "<h4>$1</h4>"
+                );
+
+            contenido =
+                contenido.replace(
+                    /^## (.*)$/gm,
+                    "<h3>$1</h3>"
+                );
+
+            contenido =
+                contenido.replace(
+                    /^# (.*)$/gm,
+                    "<h3>$1</h3>"
+                );
+
+
+            /*
+                Listas:
+
+                - Algo
+                - Algo
+            */
+
+            contenido =
+                contenido.replace(
+                    /(?:^|\n)- (.*)(?=\n|$)/g,
+                    "<li>$1</li>"
+                );
+
+
+            /*
+                Agrupar elementos de lista.
+            */
+
+            contenido =
+                contenido.replace(
+                    /(<li>.*?<\/li>)+/gs,
+                    function (lista) {
+
+                        return "<ul>" +
+                            lista +
+                            "</ul>";
+
+                    }
+                );
+
+
+            /*
+                Saltos de línea.
+            */
+
+            contenido =
+                contenido.replace(
+                    /\n/g,
+                    "<br>"
+                );
+
+
+            return contenido;
 
         }
 
 
         /*
-            Carga todas las versiones.
+            Cargar versiones
         */
 
         async function cargarVersiones() {
@@ -312,6 +413,7 @@
                                 "Accept":
                                     "application/vnd.github+json"
                             },
+
                             cache: "no-store"
                         }
                     );
@@ -331,13 +433,7 @@
 
 
                 /*
-                    Solo usamos Releases publicados.
-
-                    Las versiones marcadas como:
-                    - Draft
-                    - Pre-release
-
-                    no aparecerán aquí.
+                    Solo Releases publicadas.
                 */
 
                 const versiones =
@@ -352,8 +448,7 @@
 
 
                 /*
-                    Ordenamos desde la publicación
-                    más reciente hasta la más antigua.
+                    Más nueva primero.
                 */
 
                 versiones.sort(function (a, b) {
@@ -376,7 +471,7 @@
 
 
                 /*
-                    Si no existe ninguna versión.
+                    No existen versiones.
                 */
 
                 if (versiones.length === 0) {
@@ -387,18 +482,8 @@
                     numeroUltimaVersion.textContent =
                         "No hay versiones publicadas.";
 
-                    fechaUltimaVersion.textContent =
-                        "";
-
                     botonDescarga.style.display =
                         "none";
-
-                    listaVersiones.innerHTML =
-                        `
-                        <p class="secondary">
-                            Todavía no hay versiones anteriores.
-                        </p>
-                        `;
 
                     return;
 
@@ -406,7 +491,7 @@
 
 
                 /*
-                    LA PRIMERA ES LA ÚLTIMA VERSIÓN
+                    ÚLTIMA VERSIÓN
                 */
 
                 const ultima =
@@ -429,7 +514,7 @@
 
 
                 /*
-                    Mostrar última versión
+                    Información
                 */
 
                 tituloUltimaVersion.textContent =
@@ -448,7 +533,17 @@
 
 
                 /*
-                    Botón de descarga
+                    NOTAS DE LA RELEASE
+                */
+
+                notasUltimaVersion.innerHTML =
+                    convertirNotas(
+                        ultima.body
+                    );
+
+
+                /*
+                    DESCARGA
                 */
 
                 if (zip) {
@@ -462,17 +557,7 @@
                     botonDescarga.style.display =
                         "inline-block";
 
-                    botonDescarga.removeAttribute(
-                        "target"
-                    );
-
                 } else {
-
-                    /*
-                        Si por alguna razón el Release
-                        no tiene ZIP, llevamos al Release
-                        de GitHub.
-                    */
 
                     botonDescarga.href =
                         ultima.html_url;
@@ -485,9 +570,6 @@
 
                     botonDescarga.rel =
                         "noopener noreferrer";
-
-                    botonDescarga.style.display =
-                        "inline-block";
 
                 }
 
@@ -515,8 +597,7 @@
 
 
                 /*
-                    Creamos las tarjetas
-                    de versiones anteriores.
+                    Crear versiones anteriores.
                 */
 
                 listaVersiones.innerHTML =
@@ -557,6 +638,22 @@
                         }
 
 
+                        /*
+                            Notas de esta versión
+                        */
+
+                        const notas =
+                            release.body
+                            ? convertirNotas(
+                                release.body
+                            )
+                            : `
+                                <p class="secondary">
+                                    Sin notas de esta versión.
+                                </p>
+                            `;
+
+
                         return `
 
                             <div class="version-row">
@@ -565,7 +662,7 @@
 
                                     <strong>
                                         Versión
-                                        ${escaparHTML(version)}
+                                        ${version}
                                     </strong>
 
                                     <p>
@@ -573,15 +670,21 @@
                                     </p>
 
                                     <p>
-                                        ${escaparHTML(fecha)}
+                                        ${fecha}
                                     </p>
+
+                                    <div class="release-notes">
+                                        ${notas}
+                                    </div>
 
                                 </div>
 
 
                                 <a
-                                    href="${escaparHTML(enlace)}"
-                                    ${zip ? "" : 'target="_blank" rel="noopener noreferrer"'}
+                                    href="${enlace}"
+                                    ${zip
+                                        ? ""
+                                        : 'target="_blank" rel="noopener noreferrer"'}
                                 >
                                     ${textoBoton}
                                 </a>
@@ -611,6 +714,14 @@
 
                 fechaUltimaVersion.textContent =
                     "";
+
+
+                notasUltimaVersion.innerHTML =
+                    `
+                    <p class="secondary">
+                        Comprueba tu conexión a Internet.
+                    </p>
+                    `;
 
 
                 botonDescarga.style.display =
@@ -645,7 +756,7 @@
 
 
         /*
-            INICIAR SISTEMA
+            INICIAR
         */
 
         cargarVersiones();
