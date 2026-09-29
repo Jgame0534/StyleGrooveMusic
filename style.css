@@ -239,3 +239,29 @@ body {
 
     color: #000000;
 }
+.release-notes {
+    margin-top: 15px;
+    color: #AFAFAF;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.release-notes strong {
+    color: #FFFFFF;
+}
+
+.release-notes h3,
+.release-notes h4 {
+    color: #FFFFFF;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.release-notes ul {
+    margin-top: 6px;
+    margin-left: 20px;
+}
+
+.release-notes li {
+    margin-bottom: 4px;
+}
